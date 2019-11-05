@@ -1,13 +1,14 @@
 import pandas as pd
 import numpy as np
 import torch
+import os
 from torch.utils import data
 
 df = pd.read_csv("reviewdf.csv")
 
-if False:
+if os.path.isfile('vectorReviews') == False:
     from sklearn.feature_extraction.text import CountVectorizer
-    vectoriser = CountVectorizer(min_df=0, lowercase=True, dtype=int)
+    vectoriser = CountVectorizer(min_df=0, lowercase=True)
     vectorMatrix = vectoriser.fit_transform(df['text'])
     vectorArray = vectorMatrix.toarray()
     np.save('vectorReviews', vectorArray)

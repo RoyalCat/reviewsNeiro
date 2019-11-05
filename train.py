@@ -6,19 +6,21 @@ from torch.autograd import Variable
 from torch.utils.data import Dataset
 import numpy as np
 
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
 class Net(nn.Module):
 
     def __init__(self, dicSize):
         super(Net, self).__init__()
 
         #shape[1] = dataTensor.shape[1]
-        self.fc1 = nn.Linear(dicSize, int(dicSize/16))
-        #self.fc2 = nn.Linear(int(dicSize/4), int(dicSize/16))
-        self.fc3 = nn.Linear(int(dicSize/16), 2)
+        self.fc1 = nn.Linear(dicSize, int(dicSize/64))
+        #self.fc2 = nn.Linear(int(dicSize/4), int(dicSize/16)).to(device)
+        self.fc3 = nn.Linear(int(dicSize/64), 2)
    
     def forward(self, x):
         x = F.relu(self.fc1(x))
-        #x = F.relu(self.fc2(x))
+        #x = F.relu(self.fc2(x)).to(device)
         x = self.fc3(x)
         return F.log_softmax(x)
 
@@ -29,14 +31,14 @@ class Net(nn.Module):
 batch_size = 200
 learning_rate = 0.01
 epochs = 10
-log_interval = 10
+log_interval = 5
 #####################
 
 reviewsDataset = torch.load("reviewsDataset")
 #reviewsDatasetSize = reviewsDataset[0][0].size() * reviewsDataset[0][1].size()
 reviewsDatasetSize = reviewsDataset[0][0].size(0)
 
-net = Net(reviewsDatasetSize)
+net = Net(reviewsDatasetSize).to(device)
 
 # Осуществляем оптимизацию путем стохастического градиентного спуска
 optimizer = optim.SGD(net.parameters(), lr=learning_rate, momentum=0.9)
@@ -47,9 +49,8 @@ train_loader = torch.utils.data.DataLoader(reviewsDataset, batch_size=batch_size
 # запускаем главный тренировочный цикл
 for epoch in range(epochs):
     for batch_idx, (data, target) in enumerate(train_loader):
-        data, target = Variable(data), Variable(target)
-        target = target.long()
-        #print(data, target)
+        data = Variable(data).to(device).type(torch.cuda.FloatTensor)
+        target = Variable(target).to(device).type(torch.cuda.LongTensor)
         data = data.view(-1, reviewsDatasetSize)
         optimizer.zero_grad()
         net_out = net(data)
@@ -65,7 +66,8 @@ test_loader = torch.utils.data.DataLoader(reviewsDataset, batch_size=batch_size,
 test_loss = 0
 correct = 0
 for data, target in test_loader:
-    data, target = Variable(data, volatile=True), Variable(target)
+    data = Variable(data, volatile=True).to(device).type(torch.cuda.FloatTensor)
+    target = Variable(target).to(device).type(torch.cuda.LongTensor)
     data = data.view(-1, reviewsDatasetSize)
     net_out = net(data)
     # Суммируем потери со всех партий
@@ -74,6 +76,6 @@ for data, target in test_loader:
     correct += pred.eq(target.data).sum()
 
 test_loss /= len(test_loader.dataset)
-print('nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)n'.format(
+print('Test set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)'.format(
        test_loss, correct, len(test_loader.dataset),
        100. * correct / len(test_loader.dataset)))

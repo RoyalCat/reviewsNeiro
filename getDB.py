@@ -2,19 +2,11 @@ import pandas as pd
 from selenium import webdriver
 import re
 
-#proxy = webdriver.Proxy()
-#proxy.http_proxy= '220.143.187.219:3128'
-#proxy.socks_proxy = '220.143.187.219:3128'
-#proxy.ssl_proxy = '220.143.187.219:3128'
-#capabilities = webdriver.DesiredCapabilities.FIREFOX
-#proxy.add_to_capabilities(capabilities)
-
-browser = webdriver.Firefox()# desired_capabilities=capabilities)
+browser = webdriver.Firefox(executable_path='geckodriver.exe')# desired_capabilities=capabilities)
 
 
 def getFilmReviews(filmid):
     browser.get("https://www.kinopoisk.ru/film/" + str(filmid) + "/reviews/ord/date/status/all/perpage/200/")
-    #raw = str(requests.get("https://www.kinopoisk.ru/film/" + str(filmid) + "/reviews/ord/date/status/all/perpage/200/").content)
     raw = str(browser.page_source)
     reviewsDic = {
         'filmName': [],
@@ -40,9 +32,11 @@ def getFilmReviews(filmid):
         opinionStartPos = raw.find('<div class="response ', reviewBlockStart, reviewBlockEnd)+21
         opinion = raw[opinionStartPos:opinionStartPos+4]
         if opinion == 'good':
-            reviewsDic['opinion'].append(1)
+            reviewsDic['opinion'].append(3)
+        elif opinion == 'neutral':
+            reviewsDic['opinion'].append(2)
         else:
-            reviewsDic['opinion'].append(0)
+            reviewsDic['opinion'].append(1)
         
         authorStartPos = raw.find('<p class="profile_name"><s></s><a href="/user/', reviewBlockStart, reviewBlockEnd)+46
         reviewsDic['author'].append(raw[authorStartPos:raw.find("/", authorStartPos)-1])
@@ -68,7 +62,7 @@ def getFilmsId(url):
     return ids
 
 
-ids = list(dict.fromkeys(getFilmsId("https://www.kinopoisk.ru/popular/")))
+ids = list(dict.fromkeys(getFilmsId("https://www.kinopoisk.ru/popular/day/2019-11-04/page/2/")))
 allReviewisDic ={
         'filmName': list(),
         'author': list(),
