@@ -11,7 +11,7 @@ df1 = pd.read_csv("./reviewsdfs/reviewdfTOP.csv")
 if os.path.isfile('vectorReviews.npy') == False:
     print("generating vectors")
     from sklearn.feature_extraction.text import CountVectorizer
-    vectoriser = CountVectorizer(min_df=0, lowercase=True)
+    vectoriser = CountVectorizer(min_df=0, lowercase=True, dtype=np.int8)
     vectorMatrix = vectoriser.fit_transform(df1['text'])
     vectorArray = vectorMatrix.toarray()
 
@@ -22,14 +22,16 @@ if os.path.isfile('vectorReviews.npy') == False:
         for item in feature_names:
             f.write(item + "\n")
 else:
-    print("loading Vectors")
+    print("loading vectors")
     vectorArray = np.load('vectorReviews.npy')
 
 print("generting dataset")
-reviewsTensor = torch.Tensor(vectorArray)
+reviewsTensor = torch.ByteTensor(vectorArray)
+
 opinionsArray = df['opinion'].tolist()
+opinionsTensor = torch.ByteTensor(opinionsArray)
+
+reviewDataset = data.TensorDataset(reviewsTensor, opinionsTensor)
 
 print("saving")
-opinionsTensor = torch.Tensor(opinionsArray)
-reviewDataset = data.TensorDataset(reviewsTensor, opinionsTensor)
 torch.save(reviewDataset, "reviewsDataset")
