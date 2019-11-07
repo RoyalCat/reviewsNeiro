@@ -15,7 +15,7 @@ def getFilmReviews(filmid):
         'opinion': [],
         'text': []
         }
-    filmNameRegex = r'(<a href="\/film\/\d{0,8}\/" class="\S{0,}" data-popup-info="disabled">)(.{0,40})(?=<\/a>)'
+    filmNameRegex = r'(<a href="\/film\/\d{0,8}\/" class="\S{0,}" data-popup-info="\w{1,10}">)(.{0,40})(?=<\/a>)'
     try:
         filmName = re.findall(filmNameRegex, raw)[0][1]
     except:
@@ -57,12 +57,12 @@ def getFilmReviews(filmid):
 def getFilmsId(url):
     browser.get(url)
     raw = str(browser.page_source)
-    findidRegex = r'(?<=<a href="\/film\/)(\d{7})(?=\/")'
+    findidRegex = r'(?<=<a href="\/film\/)(\d{1,7})(?=\/")'
     ids = re.findall(findidRegex, raw)
     return ids
 
 
-ids = list(dict.fromkeys(getFilmsId("https://www.kinopoisk.ru/popular/day/2019-11-04/page/2/")))
+ids = list(dict.fromkeys(getFilmsId("https://www.kinopoisk.ru/top/")))
 allReviewisDic ={
         'filmName': list(),
         'author': list(),
@@ -72,7 +72,6 @@ allReviewisDic ={
         }
 for id in ids:
     filmReviews = getFilmReviews(id)
-    #dic.append(getFilmReviews(id), ignore_index=True)
     for column in allReviewisDic.keys():
         allReviewisDic[column].extend(filmReviews[column])
 

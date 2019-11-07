@@ -13,7 +13,6 @@ class Net(nn.Module):
     def __init__(self, dicSize):
         super(Net, self).__init__()
 
-        #shape[1] = dataTensor.shape[1]
         self.fc1 = nn.Linear(dicSize, int(dicSize/64))
         #self.fc2 = nn.Linear(int(dicSize/4), int(dicSize/16)).to(device)
         self.fc3 = nn.Linear(int(dicSize/64), 2)
@@ -35,7 +34,6 @@ log_interval = 5
 #####################
 
 reviewsDataset = torch.load("reviewsDataset")
-#reviewsDatasetSize = reviewsDataset[0][0].size() * reviewsDataset[0][1].size()
 reviewsDatasetSize = reviewsDataset[0][0].size(0)
 
 net = Net(reviewsDatasetSize).to(device)
@@ -68,7 +66,8 @@ test_loader = torch.utils.data.DataLoader(reviewsDataset, batch_size=batch_size,
 test_loss = 0
 correct = 0
 for data, target in test_loader:
-    data = Variable(data, volatile=True).type(torch.FloatTensor).to(device)
+    torch.no_grad()
+    data = Variable(data).type(torch.FloatTensor).to(device)
     target = Variable(target).type(torch.LongTensor).to(device)
     data = data.view(-1, reviewsDatasetSize)
     net_out = net(data)
