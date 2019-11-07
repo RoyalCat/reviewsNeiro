@@ -49,8 +49,8 @@ train_loader = torch.utils.data.DataLoader(reviewsDataset, batch_size=batch_size
 # запускаем главный тренировочный цикл
 for epoch in range(epochs):
     for batch_idx, (data, target) in enumerate(train_loader):
-        data = Variable(data).to(device).type(torch.cuda.FloatTensor)
-        target = Variable(target).to(device).type(torch.cuda.LongTensor)
+        data = Variable(data).type(torch.FloatTensor).to(device)
+        target = Variable(target).type(torch.LongTensor).to(device)
         data = data.view(-1, reviewsDatasetSize)
         optimizer.zero_grad()
         net_out = net(data)
@@ -62,12 +62,14 @@ for epoch in range(epochs):
                     epoch, batch_idx * len(data), len(train_loader.dataset),
                     100. * batch_idx / len(train_loader), loss.data))
 
+torch.save(net, "net.model")
+
 test_loader = torch.utils.data.DataLoader(reviewsDataset, batch_size=batch_size, shuffle=True)
 test_loss = 0
 correct = 0
 for data, target in test_loader:
-    data = Variable(data, volatile=True).to(device).type(torch.cuda.FloatTensor)
-    target = Variable(target).to(device).type(torch.cuda.LongTensor)
+    data = Variable(data, volatile=True).type(torch.FloatTensor).to(device)
+    target = Variable(target).type(torch.LongTensor).to(device)
     data = data.view(-1, reviewsDatasetSize)
     net_out = net(data)
     # Суммируем потери со всех партий
