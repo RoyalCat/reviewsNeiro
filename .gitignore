@@ -2,6 +2,7 @@ reviewsDataset
 vectorReviews.npy
 geckodriver.exe
 net.model
-.vscode\lanuch.json
-.vscode\settings.json
+.vscode/
+reviewsdfs/
 geckodriver.log
+.vscode/settings.json
