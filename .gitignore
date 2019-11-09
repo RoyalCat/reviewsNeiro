@@ -4,3 +4,4 @@ geckodriver.exe
 net.model
 .vscode\lanuch.json
 .vscode\settings.json
+geckodriver.log
